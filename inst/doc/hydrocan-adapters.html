@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>The hydrocan adapter system</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">The hydrocan adapter system</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>hydrocan normalises data from multiple Canadian hydrometric networks
+into one consistent output schema. The mechanism that makes this
+possible is the <em>adapter</em>: a small object that binds a data
+source name to a description and a set of fetch functions.</p>
+<p>This vignette explains:</p>
+<ol style="list-style-type: decimal">
+<li>What an adapter is and what it must provide.</li>
+<li>How the router uses adapters to dispatch calls.</li>
+<li>How the built-in adapters are implemented.</li>
+<li>How to write and register your own adapter.</li>
+</ol>
+</div>
+<div id="the-adapter-contract" class="section level2">
+<h2>The adapter contract</h2>
+<p>An adapter is created with <code>new_hydrocan_adapter()</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">new_hydrocan_adapter</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  name,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  description,</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  list_stations_fn,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  <span class="at">fetch_flows_fn =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="at">fetch_daily_flows_fn =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  <span class="at">fetch_levels_fn =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">fetch_daily_levels_fn =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="at">list_stations_meta_fn =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>  <span class="at">license =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>  <span class="at">license_url =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>  <span class="at">terms_url =</span> <span class="cn">NULL</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>name</code></td>
+<td>single character</td>
+<td>Unique identifier; becomes the <code>provider_name</code> column in
+all output and the registry key</td>
+</tr>
+<tr class="even">
+<td><code>description</code></td>
+<td>single character</td>
+<td>Human-readable description of the source and its limitations; shown
+by <code>hc_list_sources()</code></td>
+</tr>
+<tr class="odd">
+<td><code>list_stations_fn</code></td>
+<td><code>function()</code></td>
+<td>No arguments; returns a character vector of station IDs this adapter
+can serve</td>
+</tr>
+<tr class="even">
+<td><code>fetch_flows_fn</code></td>
+<td><code>function(station_id, start_date, end_date)</code> or
+<code>NULL</code></td>
+<td>Returns a tibble matching the realtime schema; <code>NULL</code> if
+sub-daily flow data is not available</td>
+</tr>
+<tr class="odd">
+<td><code>fetch_daily_flows_fn</code></td>
+<td><code>function(station_id, start_date, end_date)</code> or
+<code>NULL</code></td>
+<td>Returns a tibble matching the daily schema; <code>NULL</code> if
+daily flow data is not available</td>
+</tr>
+<tr class="even">
+<td><code>fetch_levels_fn</code></td>
+<td><code>function(station_id, start_date, end_date)</code> or
+<code>NULL</code></td>
+<td>Returns a tibble matching the realtime schema with
+<code>parameter = &quot;water_level&quot;</code>; <code>NULL</code> if sub-daily
+level data is not available</td>
+</tr>
+<tr class="odd">
+<td><code>fetch_daily_levels_fn</code></td>
+<td><code>function(station_id, start_date, end_date)</code> or
+<code>NULL</code></td>
+<td>Returns a tibble matching the daily schema with
+<code>parameter = &quot;water_level&quot;</code>; <code>NULL</code> if daily level
+data is not available</td>
+</tr>
+<tr class="even">
+<td><code>list_stations_meta_fn</code></td>
+<td><code>function()</code> or <code>NULL</code></td>
+<td>No arguments; returns a tibble matching the stations schema;
+<code>NULL</code> if station metadata is not available</td>
+</tr>
+<tr class="odd">
+<td><code>license</code></td>
+<td>single character or <code>NULL</code></td>
+<td>Optional license name (e.g. <code>&quot;CC-BY 4.0&quot;</code>); exposed by
+<code>hc_list_sources()</code></td>
+</tr>
+<tr class="even">
+<td><code>license_url</code></td>
+<td>single character or <code>NULL</code></td>
+<td>Optional URL to the license text</td>
+</tr>
+<tr class="odd">
+<td><code>terms_url</code></td>
+<td>single character or <code>NULL</code></td>
+<td>Optional URL to the data provider’s terms of use</td>
+</tr>
+</tbody>
+</table>
+<p>At least one fetch function must be non-<code>NULL</code>.</p>
+<div id="output-schemas" class="section level3">
+<h3>Output schemas</h3>
+<div id="realtime-sub-daily---fetch_flows_fn-fetch_levels_fn" class="section level4">
+<h4>Realtime (sub-daily) - <code>fetch_flows_fn</code> /
+<code>fetch_levels_fn</code></h4>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>station_id</code></td>
+<td>chr</td>
+<td>As provided by the caller</td>
+</tr>
+<tr class="even">
+<td><code>timestamp</code></td>
+<td>POSIXct UTC</td>
+<td>Sub-daily observations</td>
+</tr>
+<tr class="odd">
+<td><code>value</code></td>
+<td>dbl</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>parameter</code></td>
+<td>chr</td>
+<td><code>&quot;water_discharge&quot;</code> or <code>&quot;water_level&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>unit</code></td>
+<td>chr</td>
+<td>Canonical form after normalization (e.g. <code>&quot;m3/s&quot;</code>,
+<code>&quot;m&quot;</code>)</td>
+</tr>
+<tr class="even">
+<td><code>provider_name</code></td>
+<td>chr</td>
+<td>Must equal the adapter name</td>
+</tr>
+<tr class="odd">
+<td><code>quality_code</code></td>
+<td>chr</td>
+<td>Raw provider quality code; <code>NA</code> if unavailable</td>
+</tr>
+<tr class="even">
+<td><code>qf_desc</code></td>
+<td>chr</td>
+<td>Provider description of the quality code; <code>NA</code> if
+unavailable</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="daily---fetch_daily_flows_fn-fetch_daily_levels_fn" class="section level4">
+<h4>Daily - <code>fetch_daily_flows_fn</code> /
+<code>fetch_daily_levels_fn</code></h4>
+<p>Same as the realtime schema above, but with <code>date</code> (Date)
+in place of <code>timestamp</code> (POSIXct).</p>
+</div>
+<div id="stations---list_stations_meta_fn" class="section level4">
+<h4>Stations - <code>list_stations_meta_fn</code></h4>
+<table>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>station_id</code></td>
+<td>chr</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>station_name</code></td>
+<td>chr</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>provider_name</code></td>
+<td>chr</td>
+<td>Must equal the adapter name</td>
+</tr>
+<tr class="even">
+<td><code>longitude</code></td>
+<td>dbl</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>latitude</code></td>
+<td>dbl</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>elevation_m</code></td>
+<td>dbl</td>
+<td><code>NA</code> if unavailable</td>
+</tr>
+<tr class="odd">
+<td><code>period_start</code></td>
+<td>Date</td>
+<td><code>NA</code> if unavailable</td>
+</tr>
+<tr class="even">
+<td><code>period_end</code></td>
+<td>Date</td>
+<td><code>NA</code> if station is still active</td>
+</tr>
+<tr class="odd">
+<td><code>notes</code></td>
+<td>list</td>
+<td>Adapter-specific metadata; <code>NULL</code> per row if unused</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="how-the-router-works" class="section level2">
+<h2>How the router works</h2>
+<p>When you call <code>hc_read_flows()</code>, the router:</p>
+<ol style="list-style-type: decimal">
+<li>Calls <code>list_stations_fn()</code> on every registered
+adapter.</li>
+<li>Finds which adapter(s) claim the requested station.</li>
+<li>If more than one adapter matches, stops with an error asking you to
+supply <code>source =</code> explicitly. Station IDs must be unambiguous
+across the registry.</li>
+<li>Calls the appropriate fetch function on the matched adapter, wrapped
+in <code>tryCatch</code> so a failure for one station does not abort the
+whole request.</li>
+<li>Binds all results with <code>dplyr::bind_rows()</code>.</li>
+</ol>
+<p>Passing <code>source = &quot;adaptername&quot;</code> restricts the router to
+that adapter, but it still calls <code>list_stations_fn()</code> for
+that adapter and checks that the requested station is present before
+fetching data.</p>
+<p><code>hc_list_sources()</code> returns a tibble of all registered
+adapters with their descriptions and a logical column per data type
+indicating what each adapter supports. <code>hc_read_stations()</code>
+queries all adapters for station metadata, skipping those that do not
+implement <code>list_stations_meta_fn</code>.</p>
+</div>
+<div id="built-in-adapters" class="section level2">
+<h2>Built-in adapters</h2>
+<div id="hydro-quebec-hydroquebec" class="section level3">
+<h3>Hydro-Quebec (<code>hydroquebec</code>)</h3>
+<p>The <code>hydroquebec</code> adapter wraps the <a href="https://donnees.hydroquebec.com/explore/dataset/donnees-hydrometriques/">Hydro-Quebec
+open data portal</a>, which provides flow measurements at Hydro-Quebec
+reservoir facilities via an Opendatasoft REST API. No authentication is
+required.</p>
+<p><strong>Key characteristics:</strong></p>
+<ul>
+<li>Station IDs use Hydro-Quebec’s internal format,
+e.g. <code>&quot;3-230&quot;</code>.</li>
+<li>The dataset covers a rolling window of approximately 10 days;
+historical data is not available.</li>
+<li>Only flow data is available
+(<code>parameter = &quot;water_discharge&quot;</code>); no water level.</li>
+<li>The <code>approval</code> column is <code>NA</code> for all records
+(the source does not publish approval status); <code>quality_flag</code>
+carries the source’s point type field.</li>
+</ul>
+<p><strong>Station listing and data access:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(hydrocan)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># Sub-daily (hourly) flows</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>flows <span class="ot">&lt;-</span> <span class="fu">hc_read_flows</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">station_id =</span> <span class="st">&quot;3-230&quot;</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">start_date =</span> <span class="fu">Sys.Date</span>() <span class="sc">-</span> <span class="dv">5</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">end_date =</span> <span class="fu">Sys.Date</span>(),</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">source =</span> <span class="st">&quot;hydroquebec&quot;</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co"># Source-native daily flows</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>daily <span class="ot">&lt;-</span> <span class="fu">hc_read_daily_flows</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="at">station_id =</span> <span class="st">&quot;3-230&quot;</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">start_date =</span> <span class="fu">Sys.Date</span>() <span class="sc">-</span> <span class="dv">5</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="at">end_date =</span> <span class="fu">Sys.Date</span>(),</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="at">source =</span> <span class="st">&quot;hydroquebec&quot;</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>)</span></code></pre></div>
+<p>The adapter pages through the API (100 records per request) and
+filters the returned records to the requested date range in R, because
+the API stores <code>split_date</code> as a text field rather than a
+datetime field.</p>
+<p><strong>Source code:</strong> <code>R/hydroquebec.R</code>.
+Registered via:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>hydrocan_adapter_hydroquebec <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">new_hydrocan_adapter</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>    <span class="st">&quot;hydroquebec&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>    <span class="fu">paste</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>      <span class="st">&quot;Hydro-Quebec open data (Opendatasoft platform).&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>      <span class="st">&quot;Flow data only; no water level.&quot;</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>      <span class="st">&quot;Rolling window of approximately 10 days - historical data is not available.&quot;</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>    ),</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    .hq_list_stations,</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">fetch_flows_fn       =</span> .hq_fetch_flows,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    <span class="at">fetch_daily_flows_fn =</span> .hq_fetch_daily_flows,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>    <span class="at">list_stations_meta_fn =</span> .hq_list_stations_meta</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  )</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="registration" class="section level3">
+<h3>Registration</h3>
+<p>Adapters are registered at load time in
+<code>R/hydrocan-package.R</code>. Use <code>hc_list_sources()</code> to
+see all currently registered sources and which data types each
+supports.</p>
+</div>
+</div>
+<div id="writing-a-new-adapter" class="section level2">
+<h2>Writing a new adapter</h2>
+<p>Suppose you want to add a hypothetical provincial network called
+“MyProv” that exposes a JSON API. The steps are:</p>
+<div id="step-1---implement-the-internal-functions" class="section level3">
+<h3>Step 1 - Implement the internal functions</h3>
+<p>Create <code>R/myprov.R</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>.MYPROV_URL <span class="ot">&lt;-</span> <span class="st">&quot;https://data.myprov.ca/api/hydro&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>.myprov_list_stations <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> httr2<span class="sc">::</span><span class="fu">request</span>(.MYPROV_URL) <span class="sc">|&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    httr2<span class="sc">::</span><span class="fu">req_url_query</span>(<span class="at">endpoint =</span> <span class="st">&quot;stations&quot;</span>, <span class="at">format =</span> <span class="st">&quot;json&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    httr2<span class="sc">::</span><span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    httr2<span class="sc">::</span><span class="fu">resp_body_json</span>(<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  resp<span class="sc">$</span>station_id  <span class="co"># character vector</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>.myprov_fetch_flows <span class="ot">&lt;-</span> <span class="cf">function</span>(station_id, start_date, end_date) {</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> httr2<span class="sc">::</span><span class="fu">request</span>(.MYPROV_URL) <span class="sc">|&gt;</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>    httr2<span class="sc">::</span><span class="fu">req_url_query</span>(</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>      <span class="at">endpoint =</span> <span class="st">&quot;timeseries&quot;</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>      <span class="at">station  =</span> station_id,</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>      <span class="at">from     =</span> <span class="fu">format</span>(start_date),</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>      <span class="at">to       =</span> <span class="fu">format</span>(end_date),</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>      <span class="at">format   =</span> <span class="st">&quot;json&quot;</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>    httr2<span class="sc">::</span><span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>    httr2<span class="sc">::</span><span class="fu">resp_body_json</span>(<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">tibble</span>(</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>    <span class="at">station_id    =</span> station_id,</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>    <span class="at">timestamp     =</span> <span class="fu">as.POSIXct</span>(resp<span class="sc">$</span>timestamp, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>),</span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>    <span class="at">value         =</span> <span class="fu">as.numeric</span>(resp<span class="sc">$</span>discharge_cms),</span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>    <span class="at">parameter     =</span> <span class="st">&quot;water_discharge&quot;</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>    <span class="at">unit          =</span> <span class="st">&quot;m3/s&quot;</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>    <span class="at">provider_name =</span> <span class="st">&quot;myprov&quot;</span>,</span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>    <span class="at">quality_code  =</span> resp<span class="sc">$</span>quality_code,</span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>    <span class="at">qf_desc       =</span> <span class="cn">NA_character_</span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>  )</span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>}</span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>hydrocan_adapter_myprov <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>  <span class="fu">new_hydrocan_adapter</span>(</span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a>    <span class="st">&quot;myprov&quot;</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>    <span class="st">&quot;MyProv provincial hydrometric network. Sub-daily flows only.&quot;</span>,</span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a>    .myprov_list_stations,</span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a>    <span class="at">fetch_flows_fn =</span> .myprov_fetch_flows</span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a>  )</span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a>}</span></code></pre></div>
+<p>If your source also provides daily data, levels, or station metadata,
+supply the corresponding optional function arguments. Only the
+capabilities you implement will be advertised by
+<code>hc_list_sources()</code>.</p>
+<div id="using-a-stored-station-list-when-no-endpoint-exists" class="section level4">
+<h4>Using a stored station list when no endpoint exists</h4>
+<p>Some sources do not expose a station-listing endpoint. In those
+cases, bundle a character vector of known station IDs directly in the
+package and return it from <code>list_stations_fn</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>.MYPROV_STATIONS <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;MP001&quot;</span>, <span class="st">&quot;MP002&quot;</span>, <span class="st">&quot;MP003&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>.myprov_list_stations <span class="ot">&lt;-</span> <span class="cf">function</span>() .MYPROV_STATIONS</span></code></pre></div>
+<p>The tradeoff is that the list must be maintained manually as the
+network changes. The router only requires that
+<code>list_stations_fn()</code> return a character vector; how that
+vector is produced is left entirely to the adapter.</p>
+</div>
+</div>
+<div id="step-2---register-the-adapter" class="section level3">
+<h3>Step 2 - Register the adapter</h3>
+<p>Add one line to the <code>.onLoad</code> block in
+<code>R/hydrocan-package.R</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>.onLoad <span class="ot">&lt;-</span> <span class="cf">function</span>(libname, pkgname) {</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">register_hydrocan_adapter</span>(<span class="fu">hydrocan_adapter_hydroquebec</span>())</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">register_hydrocan_adapter</span>(<span class="fu">hydrocan_adapter_cehq</span>())</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">register_hydrocan_adapter</span>(<span class="fu">hydrocan_adapter_myprov</span>())   <span class="co"># add this</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="step-3---add-tests" class="section level3">
+<h3>Step 3 - Add tests</h3>
+<p>Tests for adapters are written against a mock adapter rather than
+hitting the live network. This keeps the test suite fast and fully
+offline. The pattern, established in
+<code>tests/testthat/helper-mocks.R</code>, is:</p>
+<ol style="list-style-type: decimal">
+<li>Write a <code>list_stations_fn</code> that returns a hardcoded
+character vector.</li>
+<li>Write fetch functions that generate deterministic tibbles from their
+date arguments without making any HTTP requests.</li>
+<li>Assemble these into an adapter with
+<code>new_hydrocan_adapter()</code>.</li>
+<li>Register it for the duration of a single test with
+<code>local_register_adapter()</code>, which restores the prior registry
+state on exit.</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>.myprov_stations <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;MP001&quot;</span>, <span class="st">&quot;MP002&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>.myprov_mock_fetch_flows <span class="ot">&lt;-</span> <span class="cf">function</span>(station_id, start_date, end_date) {</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(start_date), <span class="fu">as.Date</span>(end_date), <span class="at">by =</span> <span class="st">&quot;day&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">tibble</span>(</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="at">station_id    =</span> station_id,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">timestamp     =</span> <span class="fu">as.POSIXct</span>(dates, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>),</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">value         =</span> <span class="fu">seq_along</span>(dates) <span class="sc">*</span> <span class="fl">1.0</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="at">parameter     =</span> <span class="st">&quot;water_discharge&quot;</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>    <span class="at">unit          =</span> <span class="st">&quot;m3/s&quot;</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>    <span class="at">provider_name =</span> <span class="st">&quot;myprov&quot;</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    <span class="at">quality_code  =</span> <span class="cn">NA_character_</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    <span class="at">qf_desc       =</span> <span class="cn">NA_character_</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  )</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>}</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>mock_myprov_adapter <span class="ot">&lt;-</span> <span class="fu">new_hydrocan_adapter</span>(</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="st">&quot;myprov&quot;</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="st">&quot;Mock MyProv adapter for offline testing.&quot;</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>  <span class="cf">function</span>() .myprov_stations,</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>  <span class="at">fetch_flows_fn =</span> .myprov_mock_fetch_flows</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>)</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;myprov adapter returns correct schema&quot;</span>, {</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>  <span class="fu">local_register_adapter</span>(mock_myprov_adapter)</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">hc_read_flows</span>(</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>    <span class="at">station_id =</span> <span class="st">&quot;MP001&quot;</span>,</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>    <span class="at">start_date =</span> <span class="st">&quot;2024-01-01&quot;</span>,</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>    <span class="at">end_date   =</span> <span class="st">&quot;2024-01-03&quot;</span>,</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>    <span class="at">source     =</span> <span class="st">&quot;myprov&quot;</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  )</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>  <span class="fu">expect_s3_class</span>(result, <span class="st">&quot;hydrocan_realtime&quot;</span>)</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>  <span class="fu">expect_equal</span>(<span class="fu">nrow</span>(result), <span class="dv">3</span><span class="dt">L</span>)</span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>})</span></code></pre></div>
+<p><code>local_register_adapter()</code> and
+<code>local_clear_registry()</code> are defined in
+<code>tests/testthat/helper-mocks.R</code> and are available to all test
+files automatically.</p>
+</div>
+<div id="what-the-schema-validator-will-catch" class="section level3">
+<h3>What the schema validator will catch</h3>
+<p><code>validate_hydrocan_schema()</code> is called automatically after
+every data-fetching API call (<code>hc_read_flows()</code>,
+<code>hc_read_daily_flows()</code>, <code>hc_read_levels()</code>,
+<code>hc_read_daily_levels()</code>). It will stop with a clear message
+if:</p>
+<ul>
+<li>Any required column is missing from the returned tibble.</li>
+</ul>
+<p>It also normalises the <code>unit</code> column: common variants such
+as <code>&quot;m³/s&quot;</code>, <code>&quot;cms&quot;</code>, or <code>&quot;m^3/s&quot;</code> are
+all mapped to the canonical <code>&quot;m3/s&quot;</code>. Unrecognised unit
+strings pass through unchanged with a warning, identifying the raw
+string so it can be added to the mapping table in
+<code>R/schema.R</code>.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+good_stations <- tibble::tibble(
+  station_id = "X",
+  station_name = "Station X",
+  provider_name = "mock",
+  longitude = -114.0,
+  latitude = 51.0,
+  elevation_m = 1000.0,
+  period_start = as.Date("2020-01-01"),
+  period_end = as.Date(NA),
+  notes = list(NULL)
+)
+
+good_rt <- tibble::tibble(
+  station_id = "X",
+  timestamp = as.POSIXct("2024-01-01 00:00:00", tz = "UTC"),
+  value = 1.0,
+  parameter = "water_discharge",
+  unit = "m3/s",
+  provider_name = "mock",
+  quality_code = NA_character_,
+  qf_desc = NA_character_
+)
+
+good_daily <- tibble::tibble(
+  station_id = "X",
+  date = as.Date("2024-01-01"),
+  value = 1.0,
+  parameter = "water_discharge",
+  unit = "m3/s",
+  provider_name = "mock",
+  quality_code = NA_character_,
+  qf_desc = NA_character_
+)
+
+test_that("validate_hydrocan_schema passes a well-formed realtime tibble", {
+  result <- validate_hydrocan_schema(good_rt, "realtime")
+  expect_s3_class(result, "data.frame")
+})
+
+test_that("validate_hydrocan_schema passes a well-formed daily tibble", {
+  result <- validate_hydrocan_schema(good_daily, "daily")
+  expect_s3_class(result, "data.frame")
+})
+
+test_that("validate_hydrocan_schema errors on missing column", {
+  expect_error(
+    validate_hydrocan_schema(good_rt[, -1], "realtime"),
+    "station_id"
+  )
+  expect_error(
+    validate_hydrocan_schema(good_daily[, -2], "daily"),
+    "date"
+  )
+})
+
+test_that(".normalize_units maps known variants to canonical strings", {
+  expect_equal(.normalize_units("m\u00b3/s"), "m3/s")
+  expect_equal(.normalize_units("cms"), "m3/s")
+  expect_equal(.normalize_units("m^3/s"), "m3/s")
+  expect_equal(.normalize_units("cfs"), "ft3/s")
+  expect_equal(.normalize_units("feet"), "ft")
+  expect_equal(.normalize_units("metres"), "m")
+})
+
+test_that(".normalize_units passes unknown units through with a warning", {
+  expect_warning(
+    result <- .normalize_units("furlongs/fortnight"),
+    "furlongs/fortnight"
+  )
+  expect_equal(result, "furlongs/fortnight")
+})
+
+test_that("validate_hydrocan_schema normalizes units in the returned tibble", {
+  raw <- good_rt
+  raw$unit <- "m\u00b3/s"
+  result <- validate_hydrocan_schema(raw, "realtime")
+  expect_equal(result$unit, "m3/s")
+})
+
+test_that("validate_hydrocan_schema passes a well-formed stations tibble", {
+  result <- validate_hydrocan_schema(good_stations, "stations")
+  expect_s3_class(result, "data.frame")
+})
+
+test_that("validate_hydrocan_schema errors on missing column for stations type", {
+  expect_error(
+    validate_hydrocan_schema(
+      good_stations[, names(good_stations) != "longitude"],
+      "stations"
+    ),
+    "longitude"
+  )
+})
+
+
+test_that(".normalize_units handles a vector of mixed units", {
+  expect_warning(
+    result <- .normalize_units(c(
+      "cms",
+      "cfs",
+      "furlongs/fortnight"
+    )),
+    "furlongs/fortnight"
+  )
+  expect_equal(result[1L], "m3/s")
+  expect_equal(result[2L], "ft3/s")
+  expect_equal(result[3L], "furlongs/fortnight")
+})
