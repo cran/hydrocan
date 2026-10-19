@@ -1,10 +1,14 @@
 Package: hydrocan
 Title: Unified Access to Canadian Hydrometric Data
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: 
     c(person("Sam", "Albers", email = "sam.albers@hakai.org", role = c("aut", "cre")),
-    person("Tula Foundation", , role = c("fnd", "cph")),
-    person("Canada Water Agency", , role = "fnd"))
+      person("Emily", "Haughton",
+             email = "emily.haughton@hakai.org",
+             comment = c(ORCID = "0009-0002-5756-1805"),
+             role = "ctb"),
+      person("Tula Foundation", , role = c("fnd", "cph")),
+      person("Canada Water Agency", , role = "fnd"))
 Description: Provides a unified interface for accessing diverse
     web-published hydrometric data sources across Canada,
     presenting users with consistent tabular output regardless
@@ -15,16 +19,17 @@ URL: https://github.com/HakaiInstitute/hydrocan,
         https://hakaiinstitute.github.io/hydrocan/
 BugReports: https://github.com/HakaiInstitute/hydrocan/issues
 Depends: R (>= 4.2.0)
-Imports: cli, dplyr, httr2, tibble
+Imports: cli, dplyr, glue, httr2, readr, tibble
 Suggests: httptest2, knitr, rmarkdown, testthat (>= 3.0.0), withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
 NeedsCompilation: no
-Packaged: 2026-06-08 23:46:47 UTC; sam.albers
+Packaged: 2026-10-19 17:51:11 UTC; sam.albers
 Author: Sam Albers [aut, cre],
+  Emily Haughton [ctb] (ORCID: <https://orcid.org/0009-0002-5756-1805>),
   Tula Foundation [fnd, cph],
   Canada Water Agency [fnd]
 Maintainer: Sam Albers <sam.albers@hakai.org>
 Repository: CRAN
-Date/Publication: 2026-06-16 20:10:07 UTC
+Date/Publication: 2026-10-19 18:10:02 UTC

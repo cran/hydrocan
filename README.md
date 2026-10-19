@@ -6,6 +6,11 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/HakaiInstitute/hydrocan/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/HakaiInstitute/hydrocan/actions/workflows/R-CMD-check.yaml)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/hydrocan)](https://cran.r-project.org/package=hydrocan)
+[![CRAN
+Downloads](https://cranlogs.r-pkg.org/badges/hydrocan?color=brightgreen)](https://CRAN.R-project.org/package=hydrocan)
+[![cran
+checks](https://badges.cranchecks.info/worst/hydrocan.svg)](https://cran.r-project.org/web/checks/check_results_hydrocan.html)
 [![R-universe
 version](https://HakaiInstitute.r-universe.dev/hydrocan/badges/version)](https://HakaiInstitute.r-universe.dev/hydrocan)
 [![r-universe
@@ -22,6 +27,12 @@ Every function returns a consistent tibble regardless of the underlying
 data source, so analysis code works unchanged as new sources are added.
 
 ## Installation
+
+You can install the CRAN version via:
+
+``` r
+install.packages("hydrocan")
+```
 
 You can install the development version of hydrocan from the Hakai
 Institute r-universe server:
@@ -81,27 +92,27 @@ hc_read_daily_flows(
   start_date = Sys.Date() - 30
 )
 #> ── hydrocan ────────────────────────────────────────────────────────────────────
-#>   Observations: 27
+#>   Observations: 32
 #>   Sources: cehq, hydroquebec
 #>   Parameters: water_discharge, water_inflow
-#>   Date range: 2026-05-06 to 2026-06-01
+#>   Date range: 2026-09-19 to 2026-10-15
 #>   Stations: 2 returned
 #> ✔ All stations returned.
 #> ────────────────────────────────────────────────────────────────────────────────
-#> # A tibble: 27 × 8
+#> # A tibble: 32 × 8
 #>    station_id date       value parameter       unit  provider_name quality_code
 #>  * <chr>      <date>     <dbl> <chr>           <chr> <chr>         <chr>       
-#>  1 030101     2026-05-06 10.2  water_discharge m3/s  cehq          MJ          
-#>  2 030101     2026-05-07 24.0  water_discharge m3/s  cehq          MJ          
-#>  3 030101     2026-05-08 18.6  water_discharge m3/s  cehq          MJ          
-#>  4 030101     2026-05-09 12.0  water_discharge m3/s  cehq          MJ          
-#>  5 030101     2026-05-10  8.51 water_discharge m3/s  cehq          MJ          
-#>  6 030101     2026-05-11  8.02 water_discharge m3/s  cehq          MJ          
-#>  7 030101     2026-05-12  6.94 water_discharge m3/s  cehq          MJ          
-#>  8 030101     2026-05-13  5.79 water_discharge m3/s  cehq          MJ          
-#>  9 030101     2026-05-14  6.14 water_discharge m3/s  cehq          MJ          
-#> 10 030101     2026-05-15 16.2  water_discharge m3/s  cehq          MJ          
-#> # ℹ 17 more rows
+#>  1 030101     2026-09-19 1.06  water_discharge m3/s  cehq          MJ          
+#>  2 030101     2026-09-20 0.998 water_discharge m3/s  cehq          MJ          
+#>  3 030101     2026-09-21 0.950 water_discharge m3/s  cehq          MJ          
+#>  4 030101     2026-09-22 0.905 water_discharge m3/s  cehq          MJ          
+#>  5 030101     2026-09-23 0.852 water_discharge m3/s  cehq          MJ          
+#>  6 030101     2026-09-24 0.815 water_discharge m3/s  cehq          MJ          
+#>  7 030101     2026-09-25 0.787 water_discharge m3/s  cehq          MJ          
+#>  8 030101     2026-09-26 0.758 water_discharge m3/s  cehq          MJ          
+#>  9 030101     2026-09-27 0.726 water_discharge m3/s  cehq          MJ          
+#> 10 030101     2026-09-28 0.720 water_discharge m3/s  cehq          MJ          
+#> # ℹ 22 more rows
 #> # ℹ 1 more variable: qf_desc <chr>
 ```
 
@@ -118,25 +129,25 @@ hc_read_flows(
 #> ── hydrocan ────────────────────────────────────────────────────────────────────
 #>   Observations: 288
 #>   Source: hydroquebec
-#>   Parameters: water_discharge_spilled, water_discharge,
-#>   water_discharge_turbined
-#>   Date range: 2026-05-29 to 2026-06-01 23:00:00
+#>   Parameters: water_discharge_turbined, water_discharge,
+#>   water_discharge_spilled
+#>   Date range: 2026-10-12 to 2026-10-15 23:00:00
 #>   Station: 1 returned
 #> ✔ All stations returned.
 #> ────────────────────────────────────────────────────────────────────────────────
 #> # A tibble: 288 × 8
 #>    station_id timestamp           value parameter            unit  provider_name
 #>  * <chr>      <dttm>              <dbl> <chr>                <chr> <chr>        
-#>  1 3-100      2026-05-29 00:00:00    0  water_discharge_spi… m3/s  hydroquebec  
-#>  2 3-100      2026-05-29 00:00:00  316. water_discharge      m3/s  hydroquebec  
-#>  3 3-100      2026-05-29 00:00:00  316. water_discharge_tur… m3/s  hydroquebec  
-#>  4 3-100      2026-05-29 01:00:00    0  water_discharge_spi… m3/s  hydroquebec  
-#>  5 3-100      2026-05-29 01:00:00  316. water_discharge_tur… m3/s  hydroquebec  
-#>  6 3-100      2026-05-29 01:00:00  316. water_discharge      m3/s  hydroquebec  
-#>  7 3-100      2026-05-29 02:00:00    0  water_discharge_spi… m3/s  hydroquebec  
-#>  8 3-100      2026-05-29 02:00:00  317. water_discharge      m3/s  hydroquebec  
-#>  9 3-100      2026-05-29 02:00:00  317. water_discharge_tur… m3/s  hydroquebec  
-#> 10 3-100      2026-05-29 03:00:00    0  water_discharge_spi… m3/s  hydroquebec  
+#>  1 3-100      2026-10-12 00:00:00  172. water_discharge_tur… m3/s  hydroquebec  
+#>  2 3-100      2026-10-12 00:00:00  172. water_discharge      m3/s  hydroquebec  
+#>  3 3-100      2026-10-12 00:00:00    0  water_discharge_spi… m3/s  hydroquebec  
+#>  4 3-100      2026-10-12 01:00:00    0  water_discharge_spi… m3/s  hydroquebec  
+#>  5 3-100      2026-10-12 01:00:00  171. water_discharge_tur… m3/s  hydroquebec  
+#>  6 3-100      2026-10-12 01:00:00  171. water_discharge      m3/s  hydroquebec  
+#>  7 3-100      2026-10-12 02:00:00    0  water_discharge_spi… m3/s  hydroquebec  
+#>  8 3-100      2026-10-12 02:00:00  172. water_discharge_tur… m3/s  hydroquebec  
+#>  9 3-100      2026-10-12 02:00:00  172. water_discharge      m3/s  hydroquebec  
+#> 10 3-100      2026-10-12 03:00:00  172. water_discharge      m3/s  hydroquebec  
 #> # ℹ 278 more rows
 #> # ℹ 2 more variables: quality_code <chr>, qf_desc <chr>
 ```
